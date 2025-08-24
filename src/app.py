@@ -6,10 +6,10 @@ from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
+from sqlalchemy import select
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
-#from models import Person
+from models import db, User, Character, Planet, Vehicle
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -30,6 +30,13 @@ setup_admin(app)
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
+
+def get_current_user() -> User:
+    user = db.session.get(User, 1)
+    if not user:
+        raise APIException("No user with id=1. Please create one in the Flask Admin first", status_code='400')
+    return user
+
 
 # generate sitemap with all your endpoints
 @app.route('/')
